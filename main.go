@@ -36,12 +36,9 @@ func traverse_directories(directories *[]string, path string, user string) {
 			if len(remotes) < 1 {
 				continue
 			}
-			split_fetch := strings.Split(remotes[0], "/")
-			if len(split_fetch) < 4 {
-				continue
-			}
-			// Check if its the right user
-			if user != split_fetch[3] {
+			// Check if the fetch contains the username
+			contains := strings.Contains(remotes[0], user)
+			if !contains {
 				continue
 			}
 
@@ -63,13 +60,14 @@ func traverse_directories(directories *[]string, path string, user string) {
 }
 
 func main() {
-	// Set the values which will be checked
+	// Get user and root directory
 	var user string
 	var root string
 	flag.StringVar(&user, "user", "", "user which should be searched")
 	flag.StringVar(&root, "root", "", "from where the .git directories should be searched")
 	flag.Parse()
 
+	// Check if the values were provided
 	if len(user) == 0 {
 		log.Fatal("No user provided")
 	}
@@ -77,10 +75,13 @@ func main() {
 		log.Fatal("No root path provided")
 	}
 
+	// Create the slice which will store the directories
 	git_directories := make([]string, 0)
 	traverse_directories(&git_directories, root, user)
 
+	// Print out the uncommited changes
+	fmt.Println("Uncomitted changes:")
 	for _, dir := range git_directories {
-		fmt.Printf("uncommited changes: %s\n", dir)
+		fmt.Printf("\t%s\n", dir)
 	}
 }
